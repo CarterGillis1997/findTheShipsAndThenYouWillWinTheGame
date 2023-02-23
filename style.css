@@ -11,6 +11,7 @@
     width:100%;
     height:100%;
     background-color: #03a9f4;
+    overflow: hidden;
     }
     .gameBoard {
     width: 104rem;
@@ -60,11 +61,15 @@
         display: flex;
     }
     .cell {
-    border: 1px solid rgba(0, 0, 0, 0.493);
-    width: 10%;
-    height: calc((50rem / 100) * 10);
-}
+        border: 1px solid rgba(0, 0, 0, 0.493);
+        width: 10%;
+        height: calc((50rem / 100) * 10);
+       
+    }
 .yourBoard .cell{
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: #0000002b;
 }
 .verticalCoords .graticules{
@@ -113,11 +118,50 @@
     background: #ab0000;
     border-radius: 15vh;
     border: 1vh dashed red;
+    position: absolute;
 }
 .marker {
     width: 4vh;
     height: 4vh;
     background: #a1a1a1;
     border-radius: 15vh;
+    position: absolute;
     border: 1vh dashed whitesmoke;
 }
+
+.messageBox {
+    position: absolute;
+    width: 70%;
+    height: 30vh;
+    background: repeating-linear-gradient(45deg, #2196f3, #0091d7 4vh, #2196f3 7vh);
+    top: 0;
+    left: 100%;
+    top: calc(50% - 15vh);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.showMessage{
+    animation: showMessage 1s forwards;
+}
+
+.hideMessage{
+    animation: hideMessage 1s forwards;
+}
+
+@keyframes showMessage {
+    100%{
+        left: calc(50% - 35%);
+    }
+}
+
+@keyframes hideMessage {
+    100%{
+        left: calc(0% - 70%)
+    }
+}
+
+.wait:hover{
+    cursor: wait;
+}
+
