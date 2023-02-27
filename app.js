@@ -404,14 +404,32 @@ function cpuTurn(target = false){
     $("body").addClass("wait")
     //Does it think there are revealed ships that have not sunk
 
-    if($(".lastShot").length !== 0){
-
+    if($(".lastHit").length !== 0 && target == false){
+        let coords = getCoords($(".lastHit").parent())
+        let aim = aimShot($(".lastHit"), coords[1], coords[0])
+        target = aim
     }
 
+    if(target == false){
     //Random Shot
     let x = Math.floor(Math.random()*9) + 1 // 1 - 10
     let y = Math.floor(Math.random()*9) + 1 // 1 - 10
     target = $(`.yourBoard #row${y}`).children(`#col${x}`);
+    fire(target, x, y)
+}else{
+    let y = target[1]
+    let x = target[0]
+    target = $(`#row${y}`).children(`#col${x}`)
+    fire(target, x, y)
+}
+}
+function getCoords(element){
+    let x = parseInt($(element).parent().attr("id").replaceAll("row",""))
+    let y = parseInt($(element).attr("id").replaceAll("col",""))
+    return [x,y]
+}
+
+function fire(target, x, y){
     if($(target).children("img").length == 0){
         setTimeout(()=>{
         $(target).append($("<div/>").addClass("marker"))
@@ -422,117 +440,115 @@ function cpuTurn(target = false){
         setTimeout(()=>{
             $(".lastHit").removeClass("lastHit")
             $(target).append($("<div/>").addClass("hitMarker").addClass("lastHit"))
-            //Find if the edges are discovered
-            let match = [0,0,0,0] //Left, Top, Right, Down
-            //left
-            for(let i = x; i >= 0; i--){
-                console.log("left", x, i)
-                console.log($(`.yourBoard #row${y}`).children(`#col${i}`))
-                if($(`.yourBoard #row${y}`).children(`#col${i}`).children('.hitMarker').length !== 0){
-                    match[0] +=1
-                }else{
-                    target.push([i,y])
-                    break;
-                }
-            }
-            //Top
-            for(let i = y; i >= 0; i--){
-                console.log("top", y, i)
-                console.log($(`.yourBoard #row${i}`).children(`#col${x}`))
-                if($(`.yourBoard #row${i}`).children(`#col${x}`).children('.hitMarker').length !== 0){
-                    match[1] +=1
-                }else{
-                    target.push([x,i])
-                    break;
-                }
-            }
-            //Right
-            for(let i = x; i <= 10; i++){
-                console.log("right", x, i)
-                console.log($(`.yourBoard #row${y}`).children(`#col${i}`))
-                if($(`.yourBoard #row${y}`).children(`#col${i}`).children('.hitMarker').length !== 0){
-                    match[2] +=1
-                }else{
-                    target.push([i,y])
-                    break;
-                }
-            }
-            //Down
-            for(let i = y; i <= 10; i++){
-                console.log("down", y, i)
-                console.log($(`.yourBoard #row${i}`).children(`#col${x}`))
-                if($(`.yourBoard #row${i}`).children(`#col${x}`).children('.hitMarker').length !== 0){
-                    match[3] +=1
-                }else{
-                    target.push([x,i])
-                    break;
-                }
-            }
-            let aim;
-            //Decide where to shoot next
-            if(match[0] + match[2] >= match[1] + match[3]){
-                //left or right
-                let rng = Math.floor(Math.random()*2)
-                for(let i = 0; i < 2; i++){
-                if(rng == 0){
-                    //Left
-                    let x1 = x - match[0]
-                    console.log("Left")
-                    if($(`.yourBoard #row${y}`).children(`#col${x1}`).children(".marker").length == 0){
-                        aim = [x1, y]
-                        break;
-                    }else{
-                        rng = 1
-                        i = 0;
-                    }
-                }else{
-                    let x1 = x + match[0]
-                    console.log("right")
-                    if($(`.yourBoard #row${y}`).children(`#col${x1}`).children(".marker").length == 0){
-                        aim = [x1, y]
-                        break;
-                    }else{
-                        rng = 0;
-                        i = 0;
-                    }
-                }
-            }
-            }else{
-                //Up or Down
-                let rng = Math.floor(Math.random()*2)
-                for(let i = 0; i < 2; i++){
-                if(rng == 0){
-                    //Up
-                    let y1 = y - match[1]
-                    console.log("Up")
-                    if($(`.yourBoard #row${y1}`).children(`#col${x}`).children(".marker").length == 0){
-                        aim = [x1, y]
-                        break;
-                    }else{
-                        rng = 0;
-                        i = 0;
-                    }
-                }else{
-                    let y1 = y + match[3];
-                    console.log("Down")
-                    console.log($(`.yourBoard #row${y1}`).children(`#col${x}`))
-                }
-            }
-        }
+            let aim = aimShot(target, x, y)
             console.log(aim)
             //Currently gets the correct cell to fire at next
             //Need to tell it to do that now
-            cpuTurn(target);
+            cpuTurn(aim);
         }, Math.floor(Math.random()*2000) + 2000)
     }
 }
-
-function getCoords(element){
-    let x = parseInt($(element).parent().attr("id").replaceAll("row",""))
-    let y = parseInt($(element).attr("id").replaceAll("col",""))
-    return [x,y]
+function aimShot(target, x, y){
+    console.log(arguments)
+ //Find if the edges are discovered
+ let match = [0,0,0,0] //Left, Top, Right, Down
+ //left
+ for(let i = x; i >= 0; i--){
+     console.log("left", x, i)
+     console.log($(`.yourBoard #row${y}`).children(`#col${i}`))
+     if($(`.yourBoard #row${y}`).children(`#col${i}`).children('.hitMarker').length !== 0){
+         match[0] +=1
+     }else{
+         target.push([i,y])
+         break;
+     }
+ }
+ //Top
+ for(let i = y; i >= 0; i--){
+     console.log("top", y, i)
+     console.log($(`.yourBoard #row${i}`).children(`#col${x}`))
+     if($(`.yourBoard #row${i}`).children(`#col${x}`).children('.hitMarker').length !== 0){
+         match[1] +=1
+     }else{
+         target.push([x,i])
+         break;
+     }
+ }
+ //Right
+ for(let i = x; i <= 10; i++){
+     console.log("right", x, i)
+     console.log($(`.yourBoard #row${y}`).children(`#col${i}`))
+     if($(`.yourBoard #row${y}`).children(`#col${i}`).children('.hitMarker').length !== 0){
+         match[2] +=1
+     }else{
+         target.push([i,y])
+         break;
+     }
+ }
+ //Down
+ for(let i = y; i <= 10; i++){
+     console.log("down", y, i)
+     console.log($(`.yourBoard #row${i}`).children(`#col${x}`))
+     if($(`.yourBoard #row${i}`).children(`#col${x}`).children('.hitMarker').length !== 0){
+         match[3] +=1
+     }else{
+         target.push([x,i])
+         break;
+     }
+ }
+ let aim;
+ //Decide where to shoot next
+ if(match[0] + match[2] >= match[1] + match[3]){ //Cannot shoot up and down
+     //left or right
+     let rng = Math.floor(Math.random()*2)
+     for(let i = 0; i < 2; i++){
+     if(rng == 0){
+         //Left
+         let x1 = x - match[0]
+         console.log("Left")
+         if($(`.yourBoard #row${y}`).children(`#col${x1}`).children(".marker").length == 0){
+             aim = [x1, y]
+             break;
+         }else{
+             rng = 1
+             i = 0;
+         }
+     }else{
+         let x1 = x + match[0]
+         console.log("right")
+         if($(`.yourBoard #row${y}`).children(`#col${x1}`).children(".marker").length == 0){
+             aim = [x1, y]
+             break;
+         }else{
+             rng = 0;
+             i = 0;
+         }
+     }
+ }
+ }else{
+     //Up or Down
+     let rng = Math.floor(Math.random()*2)
+     for(let i = 0; i < 2; i++){
+     if(rng == 0){
+         //Up
+         let y1 = y - match[1]
+         console.log("Up")
+         if($(`.yourBoard #row${y1}`).children(`#col${x}`).children(".marker").length == 0){
+             aim = [x1, y]
+             break;
+         }else{
+             rng = 0;
+             i = 0;
+         }
+     }else{
+         let y1 = y + match[3];
+         console.log("Down")
+         console.log($(`.yourBoard #row${y1}`).children(`#col${x}`))
+     }
+ }
 }
-
+return aim;
+}
 $("body").on("keydown",(event)=>{
     if(event.key == 'p'){
         enemySetup()
