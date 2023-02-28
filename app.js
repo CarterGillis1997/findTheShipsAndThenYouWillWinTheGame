@@ -405,18 +405,20 @@ function cpuTurn(target = false){
     //Does it think there are revealed ships that have not sunk
 
     if($(".lastHit").length !== 0 && target == false){
+        console.log("LAST HIT IS 0 AND TARGET IS false")
         let coords = getCoords($(".lastHit").parent())
         let aim = aimShot($(".lastHit"), coords[1], coords[0])
         target = aim
     }
-
     if(target == false){
+    console.log(`TARGET IS false`)
     //Random Shot
     let x = Math.floor(Math.random()*9) + 1 // 1 - 10
     let y = Math.floor(Math.random()*9) + 1 // 1 - 10
     target = $(`.yourBoard #row${y}`).children(`#col${x}`);
     fire(target, x, y)
 }else{
+    console.log(`TARGET IS ${target}`)
     let y = target[1]
     let x = target[0]
     target = $(`#row${y}`).children(`#col${x}`)
@@ -447,6 +449,7 @@ function fire(target, x, y){
             cpuTurn(aim);
         }, Math.floor(Math.random()*2000) + 2000)
     }
+    console.log("SHOT IS FIRED")
 }
 function aimShot(target, x, y){
     console.log(arguments)
@@ -470,7 +473,7 @@ function aimShot(target, x, y){
      if($(`.yourBoard #row${i}`).children(`#col${x}`).children('.hitMarker').length !== 0){
          match[1] +=1
      }else{
-         target.push([x,i])
+         target.push([y,i])
          break;
      }
  }
@@ -492,61 +495,32 @@ function aimShot(target, x, y){
      if($(`.yourBoard #row${i}`).children(`#col${x}`).children('.hitMarker').length !== 0){
          match[3] +=1
      }else{
-         target.push([x,i])
+         target.push([y,i])
          break;
      }
  }
  let aim;
+ let failed = 0;
  //Decide where to shoot next
- if(match[0] + match[2] >= match[1] + match[3]){ //Cannot shoot up and down
-     //left or right
-     let rng = Math.floor(Math.random()*2)
-     for(let i = 0; i < 2; i++){
-     if(rng == 0){
-         //Left
-         let x1 = x - match[0]
-         console.log("Left")
-         if($(`.yourBoard #row${y}`).children(`#col${x1}`).children(".marker").length == 0){
-             aim = [x1, y]
-             break;
-         }else{
-             rng = 1
-             i = 0;
-         }
-     }else{
-         let x1 = x + match[0]
-         console.log("right")
-         if($(`.yourBoard #row${y}`).children(`#col${x1}`).children(".marker").length == 0){
-             aim = [x1, y]
-             break;
-         }else{
-             rng = 0;
-             i = 0;
-         }
-     }
+ for(let i = 0; i < 2; i++){
+    console.log(match[0] + match[2] >= match[1] + match[3])
+    console.log(aim)
+ if(match[0] + match[2] > match[1] + match[3] || aim == 'horizontal'){ //Cannot shoot up and down
+    aim = check("horizontal", match, x, y);
+ }else if(match[0] + match[2] < match[1] + match[3] || aim == 'vetical'){
+    aim = check("vertical", match,x,y)
+ }else{ 
+    aim = check(['vertical','horizontal'][Math.floor(Math.random()*2)], match, x, y)
  }
- }else{
-     //Up or Down
-     let rng = Math.floor(Math.random()*2)
-     for(let i = 0; i < 2; i++){
-     if(rng == 0){
-         //Up
-         let y1 = y - match[1]
-         console.log("Up")
-         if($(`.yourBoard #row${y1}`).children(`#col${x}`).children(".marker").length == 0){
-             aim = [x1, y]
-             break;
-         }else{
-             rng = 0;
-             i = 0;
-         }
-     }else{
-         let y1 = y + match[3];
-         console.log("Down")
-         console.log($(`.yourBoard #row${y1}`).children(`#col${x}`))
-     }
+ if(aim == 'vertical' || aim == 'horizontal'){
+    failed += 1;
+ }
+ if(failed >= 2){
+    aim = false
+    break;
  }
 }
+console.log("AIM",aim)
 return aim;
 }
 $("body").on("keydown",(event)=>{
@@ -568,3 +542,102 @@ function fogOfWar(){
 }
 
 fogOfWar()
+
+function check(dir, match, x, y){
+    let tried = [0,0];
+    if(dir == "horizontal"){
+         //left or right
+         let rng = Math.floor(Math.random()*2)
+         for(let i = 0; i < 2; i++){
+         if(rng == 0){
+            
+            if(tried[0] == 1 && tried[1] == 1){
+                return 'vertical'
+            }
+             //Left
+             let x1 = x - match[0]
+             console.log("Left")
+             if(x1 > 0){
+             if($(`.yourBoard #row${y}`).children(`#col${x1}`).children(".marker").length == 0){
+                 return [x1, y]
+             }else{
+                 rng = 1
+                 i = 0;
+                 tried[0] = 1
+             }
+            }else{
+                rng = 1
+                i = 0;
+                tried[0] = 1
+            }
+         }else{
+            if(tried[0] == 1 && tried[1] == 1){
+                return 'vertical'
+            }
+             let x1 = x + match[0]
+             console.log("right")
+             if(x1 < 11){
+             if($(`.yourBoard #row${y}`).children(`#col${x1}`).children(".marker").length == 0){
+                 return [x1, y]
+             }else{
+                 rng = 1;
+                 i = 0;
+                 tried[1] = 1
+             }
+            }else{
+                rng = 1
+                i = 0;
+                tried[1] = 1
+            }
+         }
+     }
+}else{
+         //Up or Down
+         let rng = Math.floor(Math.random()*2)
+         for(let i = 0; i < 2; i++){
+         if(rng == 0){
+            if(tried[0] == 1 && tried[1] == 1){
+                return 'horizontal'
+            }
+             //Up
+             let y1 = y - match[1]
+             console.log("Up")
+             if(y1 > 0){
+             if($(`.yourBoard #row${y1}`).children(`#col${x}`).children(".marker").length == 0){
+                console.log('UP', y1, y)
+                return [x, y1]
+             }else{
+                 rng = 0;
+                 i = 0;
+                 tried[0] = 1
+             }
+            }else{
+                rng = 0;
+                i = 0;
+                tried[0] = 1
+            }
+         }else{
+            if(tried[0] == 1 && tried[1] == 1){
+                return 'horizontal'
+            }
+             let y1 = y + match[3];
+             console.log("Down")
+             if(y1 < 11){
+             console.log($(`.yourBoard #row${y1}`).children(`#col${x}`))
+             if($(`.yourBoard #row${y1}`).children(`#col${x}`).children(".marker").length == 0){
+                console.log('DOWN', y1, y)
+                return [x, y1]
+            }else{
+                rng = 0;
+                i = 0;
+                tried[1] = 1
+            }
+         }else{
+            rng = 0;
+            i = 0;
+            tried[1] = 1//Currently causes infinite loop when reaching edge of grid. Wont change directions for some reason
+         }
+        }
+     }
+}
+}
